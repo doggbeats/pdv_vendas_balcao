@@ -11,6 +11,8 @@ import {
   Truck,
   X,
 } from "lucide-react";
+import NotificacoesEstoque from "./NotificacoesEstoque";
+import UsuarioCabecalho from "./UsuarioCabecalho";
 
 type MenuItem = {
   name: string;
@@ -117,6 +119,15 @@ export default function Sidebar({ aberto = false, onFechar }: SidebarProps) {
 
             <div className="flex-1 overflow-y-auto">
               <Navegacao onNavegar={onFechar} />
+            </div>
+
+            <div className="border-t border-zinc-200 dark:border-zinc-800">
+              <div className="max-h-[55vh] overflow-y-auto p-2">
+                <NotificacoesEstoque variacao="menu" onNavegar={onFechar} />
+              </div>
+              <div className="border-t border-zinc-200 dark:border-zinc-800 p-3">
+                <UsuarioCabecalho variacao="menu" />
+              </div>
             </div>
           </aside>
         </div>
