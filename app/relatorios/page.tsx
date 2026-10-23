@@ -51,6 +51,22 @@ function rotuloMes(mes: string) {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
+type PeriodoRelatorio = "7" | "15" | "30" | "mes";
+
+const PERIODOS: Array<{ valor: PeriodoRelatorio; nome: string }> = [
+  { valor: "7", nome: "7 dias" },
+  { valor: "15", nome: "15 dias" },
+  { valor: "30", nome: "30 dias" },
+  { valor: "mes", nome: "Mês" },
+];
+
+function inicioDosUltimosDias(dias: number) {
+  const inicio = new Date();
+  inicio.setHours(0, 0, 0, 0);
+  inicio.setDate(inicio.getDate() - (dias - 1));
+  return inicio;
+}
+
 function dataHora(data: string) {
   return new Date(data).toLocaleString("pt-BR", {
     dateStyle: "short",
@@ -65,6 +81,7 @@ function quantidadeItens(venda: Venda) {
 export default function RelatoriosPage() {
   const { vendas, carregado } = useDados();
   const [mes, setMes] = useState("");
+  const [periodo, setPeriodo] = useState<PeriodoRelatorio>("mes");
   const [gerando, setGerando] = useState(false);
   const [erro, setErro] = useState("");
 
@@ -73,25 +90,31 @@ export default function RelatoriosPage() {
     queueMicrotask(() => setMes((atual) => atual || mesAtual()));
   }, []);
 
-  const vendasDoMes = useMemo(() => {
+  const vendasDoPeriodo = useMemo(() => {
+    const inicio =
+      periodo === "mes" ? null : inicioDosUltimosDias(Number(periodo));
+
     return vendas
-      .filter((venda) => mesDaVenda(venda.data) === mes)
+      .filter((venda) => {
+        if (periodo === "mes") return mesDaVenda(venda.data) === mes;
+        return inicio !== null && new Date(venda.data) >= inicio;
+      })
       .sort((a, b) => a.data.localeCompare(b.data));
-  }, [vendas, mes]);
+  }, [vendas, mes, periodo]);
 
   const resumo = useMemo(() => {
-    const total = vendasDoMes.reduce((acc, venda) => acc + venda.total, 0);
-    const itens = vendasDoMes.reduce(
+    const total = vendasDoPeriodo.reduce((acc, venda) => acc + venda.total, 0);
+    const itens = vendasDoPeriodo.reduce(
       (acc, venda) => acc + quantidadeItens(venda),
       0
     );
-    const desconto = vendasDoMes.reduce(
+    const desconto = vendasDoPeriodo.reduce(
       (acc, venda) => acc + venda.desconto,
       0
     );
 
     const porPagamento = FORMAS_PAGAMENTO.map((opcao) => {
-      const vendasDaForma = vendasDoMes.filter(
+      const vendasDaForma = vendasDoPeriodo.filter(
         (venda) => venda.formaPagamento === opcao.valor
       );
       return {
@@ -105,13 +128,13 @@ export default function RelatoriosPage() {
       total,
       itens,
       desconto,
-      transacoes: vendasDoMes.length,
-      ticketMedio: vendasDoMes.length > 0 ? total / vendasDoMes.length : 0,
+      transacoes: vendasDoPeriodo.length,
+      ticketMedio: vendasDoPeriodo.length > 0 ? total / vendasDoPeriodo.length : 0,
       porPagamento,
     };
-  }, [vendasDoMes]);
+  }, [vendasDoPeriodo]);
 
-  if (!mes) {
+  if (periodo === "mes" && !mes) {
     return (
       <div className="p-6 text-sm text-zinc-500 dark:text-zinc-400">
         Carregando relatórios...
@@ -119,8 +142,15 @@ export default function RelatoriosPage() {
     );
   }
 
+  const rotuloPeriodo =
+    periodo === "mes" ? rotuloMes(mes) : `últimos ${periodo} dias`;
+  const descricaoPeriodo =
+    periodo === "mes"
+      ? rotuloMes(mes)
+      : `${inicioDosUltimosDias(Number(periodo)).toLocaleDateString("pt-BR")} a ${new Date().toLocaleDateString("pt-BR")}`;
+
   const gerarPdf = async () => {
-    if (vendasDoMes.length === 0) return;
+    if (vendasDoPeriodo.length === 0) return;
 
     setErro("");
     setGerando(true);
@@ -141,12 +171,18 @@ export default function RelatoriosPage() {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.setTextColor(24, 24, 27);
-      doc.text("Relatório Mensal de Vendas", 14, 16);
+      doc.text(
+        periodo === "mes"
+          ? "Relatório Mensal de Vendas"
+          : "Relatório de Vendas por Período",
+        14,
+        16
+      );
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.setTextColor(113, 113, 122);
-      doc.text(`${rotuloMes(mes)} — CODE_PH Gestão`, 14, 22);
+      doc.text(`${descricaoPeriodo} — CODE_PH Gestão`, 14, 22);
       doc.text(
         `Gerado em ${new Date().toLocaleString("pt-BR")}`,
         14,
@@ -183,7 +219,7 @@ export default function RelatoriosPage() {
             "Total",
           ],
         ],
-        body: vendasDoMes.map((venda) => [
+        body: vendasDoPeriodo.map((venda) => [
           formatarNumeroVenda(venda.numero),
           dataHora(venda.data),
           venda.itens
@@ -232,7 +268,11 @@ export default function RelatoriosPage() {
         );
       }
 
-      doc.save(`relatorio-vendas-${mes}.pdf`);
+      doc.save(
+        `relatorio-vendas-${
+          periodo === "mes" ? mes : `ultimos-${periodo}-dias`
+        }.pdf`
+      );
     } catch (error) {
       setErro(
         error instanceof Error ? error.message : "Erro ao gerar o PDF."
@@ -250,34 +290,59 @@ export default function RelatoriosPage() {
             Relatórios
           </h1>
           <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-            Relatório mensal de todas as vendas em PDF
+            Relatórios de vendas em PDF por período
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-end gap-3">
-          <div className="space-y-1">
-            <label
-              htmlFor="mes"
-              className="text-xs font-medium text-zinc-600 dark:text-zinc-400"
-            >
-              Mês
-            </label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
-              <input
-                id="mes"
-                type="month"
-                value={mes}
-                onChange={(e) => setMes(e.target.value)}
-                className="pl-9 pr-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+          <div className="space-y-2">
+            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+              Período
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {PERIODOS.map((opcao) => (
+                <button
+                  key={opcao.valor}
+                  type="button"
+                  onClick={() => setPeriodo(opcao.valor)}
+                  aria-pressed={periodo === opcao.valor}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    periodo === opcao.valor
+                      ? "bg-blue-600 border-blue-600 text-white"
+                      : "border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  {opcao.nome}
+                </button>
+              ))}
             </div>
           </div>
+
+          {periodo === "mes" && (
+            <div className="space-y-1">
+              <label
+                htmlFor="mes"
+                className="text-xs font-medium text-zinc-600 dark:text-zinc-400"
+              >
+                Mês
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
+                <input
+                  id="mes"
+                  type="month"
+                  value={mes}
+                  onChange={(e) => setMes(e.target.value)}
+                  className="pl-9 pr-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          )}
 
           <button
             type="button"
             onClick={gerarPdf}
-            disabled={vendasDoMes.length === 0 || gerando}
+            disabled={vendasDoPeriodo.length === 0 || gerando}
             className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" />
@@ -292,14 +357,16 @@ export default function RelatoriosPage() {
         </div>
       )}
 
-      {carregado && vendasDoMes.length === 0 && (
+      {carregado && vendasDoPeriodo.length === 0 && (
         <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-10 text-center">
           <Receipt className="w-10 h-10 mx-auto text-zinc-300 dark:text-zinc-600" />
           <p className="mt-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            Nenhuma venda em {rotuloMes(mes)}
+            {periodo === "mes"
+              ? `Nenhuma venda em ${rotuloMes(mes)}`
+              : `Nenhuma venda nos ${rotuloPeriodo}`}
           </p>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Escolha outro mês ou{" "}
+            Escolha outro período ou{" "}
             <Link
               href="/vendas"
               className="text-blue-600 dark:text-blue-400 hover:underline"
@@ -311,7 +378,7 @@ export default function RelatoriosPage() {
         </div>
       )}
 
-      {vendasDoMes.length > 0 && (
+      {vendasDoPeriodo.length > 0 && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg border border-zinc-200 dark:border-zinc-800">
@@ -402,11 +469,14 @@ export default function RelatoriosPage() {
           <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
             <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Vendas de {rotuloMes(mes)}
+                Vendas{" "}
+                {periodo === "mes"
+                  ? `de ${rotuloMes(mes)}`
+                  : `dos ${rotuloPeriodo}`}
               </h2>
               <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {vendasDoMes.length}{" "}
-                {vendasDoMes.length === 1 ? "venda" : "vendas"}
+                {vendasDoPeriodo.length}{" "}
+                {vendasDoPeriodo.length === 1 ? "venda" : "vendas"}
               </span>
             </div>
 
@@ -426,7 +496,7 @@ export default function RelatoriosPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {[...vendasDoMes].reverse().map((venda) => (
+                  {[...vendasDoPeriodo].reverse().map((venda) => (
                     <tr
                       key={venda.id}
                       className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"

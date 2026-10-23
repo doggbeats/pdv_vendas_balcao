@@ -1,10 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Camera, X } from "lucide-react";
+import { Camera, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { criarCategoria, criarProduto, useDados } from "@/app/lib/store";
+import {
+  criarCategoria,
+  criarProduto,
+  removerCategoria,
+  useDados,
+} from "@/app/lib/store";
 
 function gerarCodigo() {
   return (
@@ -16,7 +21,7 @@ function gerarCodigo() {
 }
 
 export default function CadastroProdutoPage() {
-  const { categorias } = useDados();
+  const { categorias, produtos } = useDados();
   const [formData, setFormData] = useState({
     codigo: "",
     nome: "",
@@ -53,6 +58,42 @@ export default function CadastroProdutoPage() {
     } catch (error) {
       setErroCategoria(
         error instanceof Error ? error.message : "Erro ao criar categoria."
+      );
+    }
+  };
+
+  const handleExcluirCategoria = (valor: string, nome: string) => {
+    setErroCategoria("");
+    setMensagemCategoria("");
+
+    const emUso = produtos.filter(
+      (produto) => produto.categoria === valor
+    ).length;
+
+    if (emUso > 0) {
+      setErroCategoria(
+        `Não é possível excluir "${nome}": ${emUso} produto(s) usam esta categoria.`
+      );
+      return;
+    }
+
+    if (
+      !window.confirm(
+        `Excluir a categoria "${nome}"? Esta ação não pode ser desfeita.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      removerCategoria(valor);
+      setFormData((prev) =>
+        prev.categoria === valor ? { ...prev, categoria: "" } : prev
+      );
+      setMensagemCategoria(`Categoria "${nome}" excluída.`);
+    } catch (error) {
+      setErroCategoria(
+        error instanceof Error ? error.message : "Erro ao excluir categoria."
       );
     }
   };
@@ -274,7 +315,7 @@ export default function CadastroProdutoPage() {
                   {mostrarNovaCategoria && (
                     <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-3 space-y-2">
                       <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                        Criar nova categoria
+                        Adicionar categoria
                       </p>
                       <div className="flex flex-col gap-2 sm:flex-row">
                         <input
@@ -298,6 +339,67 @@ export default function CadastroProdutoPage() {
                         >
                           Criar
                         </button>
+                      </div>
+
+                      <div className="border-t border-zinc-200 dark:border-zinc-700 pt-2">
+                        <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                          Excluir categoria
+                        </p>
+
+                        {categorias.length === 0 ? (
+                          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                            Nenhuma categoria cadastrada.
+                          </p>
+                        ) : (
+                          <ul className="mt-1 max-h-44 overflow-y-auto divide-y divide-zinc-200 dark:divide-zinc-700">
+                            {categorias.map((categoria) => {
+                              const emUso = produtos.filter(
+                                (produto) =>
+                                  produto.categoria === categoria.valor
+                              ).length;
+
+                              return (
+                                <li
+                                  key={categoria.valor}
+                                  className="flex items-center justify-between gap-2 py-1.5"
+                                >
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300 break-words">
+                                      {categoria.nome}
+                                    </p>
+                                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                                      {emUso === 0
+                                        ? "Sem produtos"
+                                        : `${emUso} produto${
+                                            emUso === 1 ? "" : "s"
+                                          }`}
+                                    </p>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleExcluirCategoria(
+                                        categoria.valor,
+                                        categoria.nome
+                                      )
+                                    }
+                                    disabled={emUso > 0}
+                                    title={
+                                      emUso > 0
+                                        ? "Não é possível excluir uma categoria em uso."
+                                        : `Excluir ${categoria.nome}`
+                                    }
+                                    className="inline-flex shrink-0 items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    Excluir
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
                       </div>
                     </div>
                   )}

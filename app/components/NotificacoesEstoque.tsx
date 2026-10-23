@@ -127,13 +127,13 @@ export default function NotificacoesEstoque() {
         </button>
 
         {aberto && (
-          <div className="absolute right-0 top-full mt-2 z-50 w-[min(22rem,calc(100vw-1.5rem))] rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl">
+          <div className="fixed inset-x-3 top-16 z-50 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[min(22rem,calc(100vw-1.5rem))]">
             <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   Alertas de estoque
                 </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 break-words">
                   {temAlerta
                     ? `${totalSemEstoque} sem estoque · ${totalBaixo} com estoque baixo`
                     : "Tudo certo por aqui"}
@@ -161,7 +161,7 @@ export default function NotificacoesEstoque() {
                         className="px-4 py-3 flex items-start justify-between gap-3"
                       >
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 break-words leading-snug">
                             {produto.nome}
                           </p>
                           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
@@ -258,7 +258,7 @@ export default function NotificacoesEstoque() {
                       key={produto.id}
                       className="flex items-center justify-between gap-2 text-xs"
                     >
-                      <span className="truncate text-zinc-700 dark:text-zinc-300">
+                      <span className="min-w-0 break-words text-zinc-700 dark:text-zinc-300">
                         {produto.nome}
                       </span>
                       <span
