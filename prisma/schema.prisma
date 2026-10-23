@@ -1,0 +1,208 @@
+// Prisma schema for CODE_PH Gestão
+// Núcleo: usuários, produtos, vendas, estoque, caixa e auditoria de exclusões.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PapelUsuario {
+  ADMIN
+  OPERADOR
+}
+
+enum StatusVenda {
+  CONCLUIDA
+  CANCELADA
+}
+
+enum FormaPagamento {
+  DINHEIRO
+  CARTAO
+  PIX
+}
+
+enum TipoMovimentoEstoque {
+  ENTRADA
+  SAIDA
+  ESTORNO_CANCELAMENTO
+}
+
+enum TipoMovimentoCaixa {
+  VENDA
+  ESTORNO_CANCELAMENTO
+  AJUSTE
+}
+
+enum StatusEstorno {
+  PENDENTE
+  ESTORNADO
+}
+
+enum ResultadoAuditoria {
+  AUTORIZADO
+  NEGADO
+}
+
+enum TipoOperacaoAuditoria {
+  EXCLUSAO_VENDA
+}
+
+model Usuario {
+  id           String       @id @default(cuid())
+  nome         String
+  email        String       @unique
+  senhaHash    String
+  papel        PapelUsuario @default(OPERADOR)
+  ativo        Boolean      @default(true)
+  criadoEm     DateTime     @default(now())
+  atualizadoEm DateTime     @updatedAt
+
+  vendasSolicitadas AuditoriaExclusaoVenda[] @relation("OperadorSolicitante")
+  vendasAutorizadas AuditoriaExclusaoVenda[] @relation("AdministradorAutorizador")
+
+  @@index([papel])
+}
+
+model Produto {
+  id                  String   @id @default(cuid())
+  codigo              String   @unique
+  nome                String
+  categoria           String
+  valorCusto          Decimal  @db.Decimal(10, 2)
+  valorVenda          Decimal  @db.Decimal(10, 2)
+  quantidade          Int      @default(0)
+  estoqueMinimo       Int      @default(0)
+  unidadeMedida       String   @default("UN")
+  unidadesPorCaixinha Int      @default(1)
+  especificacao       String   @default("")
+  criadoEm            DateTime @default(now())
+  atualizadoEm        DateTime @updatedAt
+
+  itensVenda        ItemVenda[]
+  movimentosEstoque MovimentoEstoque[]
+
+  @@index([categoria])
+}
+
+model Venda {
+  id             String         @id @default(cuid())
+  numero         Int            @unique @default(autoincrement())
+  data           DateTime       @default(now())
+  subtotal       Decimal        @db.Decimal(10, 2)
+  desconto       Decimal        @db.Decimal(10, 2)
+  total          Decimal        @db.Decimal(10, 2)
+  formaPagamento FormaPagamento
+  valorRecebido  Decimal        @db.Decimal(10, 2)
+  troco          Decimal        @db.Decimal(10, 2)
+  status         StatusVenda    @default(CONCLUIDA)
+  canceladaEm    DateTime?
+  criadoEm       DateTime       @default(now())
+
+  itens           ItemVenda[]
+  movimentosCaixa MovimentoCaixa[]
+  auditorias      AuditoriaExclusaoVenda[]
+  estorno         EstornoFinanceiro?
+
+  @@index([status, data])
+}
+
+model ItemVenda {
+  id            String  @id @default(cuid())
+  vendaId       String
+  produtoId     String?
+  codigo        String
+  nome          String
+  categoria     String
+  valorUnitario Decimal @db.Decimal(10, 2)
+  quantidade    Int
+
+  venda   Venda    @relation(fields: [vendaId], references: [id], onDelete: Restrict)
+  produto Produto? @relation(fields: [produtoId], references: [id], onDelete: SetNull)
+
+  @@index([vendaId])
+}
+
+model MovimentoEstoque {
+  id         String               @id @default(cuid())
+  produtoId  String
+  tipo       TipoMovimentoEstoque
+  quantidade Int
+  motivo     String?
+  vendaId    String?
+  criadoEm   DateTime             @default(now())
+
+  produto Produto @relation(fields: [produtoId], references: [id], onDelete: Restrict)
+
+  @@index([produtoId, criadoEm])
+  @@index([vendaId])
+}
+
+model MovimentoCaixa {
+  id        String             @id @default(cuid())
+  tipo      TipoMovimentoCaixa
+  valor     Decimal            @db.Decimal(10, 2)
+  descricao String
+  vendaId   String?
+  criadoEm  DateTime           @default(now())
+
+  venda Venda? @relation(fields: [vendaId], references: [id], onDelete: SetNull)
+
+  @@index([vendaId])
+}
+
+model EstornoFinanceiro {
+  id             String         @id @default(cuid())
+  vendaId        String         @unique
+  valor          Decimal        @db.Decimal(10, 2)
+  status         StatusEstorno  @default(PENDENTE)
+  formaPagamento FormaPagamento
+  observacao     String?
+  criadoEm       DateTime       @default(now())
+  atualizadoEm   DateTime       @updatedAt
+
+  venda Venda @relation(fields: [vendaId], references: [id], onDelete: Restrict)
+}
+
+model AuditoriaExclusaoVenda {
+  id                  String                @id @default(cuid())
+  vendaId             String
+  vendaNumero         Int
+  valorTotal          Decimal               @db.Decimal(10, 2)
+  itens               Json
+  ocorridoEm          DateTime              @default(now())
+  operadorId          String?
+  adminId             String?
+  tentativaAdminEmail String?
+  motivo              String
+  tipoOperacao        TipoOperacaoAuditoria @default(EXCLUSAO_VENDA)
+  resultado           ResultadoAuditoria
+  ip                  String?
+  userAgent           String?
+  movimentoEstoqueIds Json?
+  movimentoCaixaIds   Json?
+  estornoId           String?
+
+  venda    Venda    @relation(fields: [vendaId], references: [id], onDelete: Restrict)
+  operador Usuario? @relation("OperadorSolicitante", fields: [operadorId], references: [id], onDelete: SetNull)
+  admin    Usuario? @relation("AdministradorAutorizador", fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([ocorridoEm])
+  @@index([vendaId])
+  @@index([resultado])
+}
+
+model LimiteRequisicao {
+  id           String    @id @default(cuid())
+  escopo       String
+  chave        String
+  contagem     Int       @default(0)
+  janelaInicio DateTime
+  bloqueadoAte DateTime?
+  atualizadoEm DateTime  @updatedAt
+
+  @@unique([escopo, chave])
+}

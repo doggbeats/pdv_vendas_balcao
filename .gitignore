@@ -13,6 +13,9 @@
 # testing
 /coverage
 
+# banco local de desenvolvimento (PostgreSQL embutido)
+/.pgdata/
+
 # next.js
 /.next/
 /out/

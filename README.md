@@ -1,5 +1,57 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## CODE_PH Gestão
+
+Sistema web profissional para mercadinhos e lojas de variedades (PDV, vendas, estoque, caixa e relatórios).
+
+## Tecnologias (Etapa 1 - Fundação)
+- Next.js 16 (App Router), React 19, TypeScript 5 (strict)
+- Tailwind CSS 4
+- Prisma ORM + PostgreSQL
+- Zod, NextAuth v5, bcryptjs
+- Recharts, Lucide React
+- Vitest, Playwright
+
+## Pré-requisitos
+- Node.js 18+ (recomendado 20+)
+- PostgreSQL 14+
+
+## Instalação
+
+```bash
+npm install
+```
+
+Copie `.env.example` para `.env.local` e configure:
+```bash
+cp .env.example .env.local
+```
+Edite `DATABASE_URL`, `AUTH_SECRET`, `NEXTAUTH_URL`.
+
+## Banco de dados
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+# ou
+npm run db:push
+```
+
+## Desenvolvimento
+
+```bash
+npm run dev
+```
+
+Abra [http://localhost:3000](http://localhost:3000).
+
+## Testes
+
+```bash
+npm run test        # unitários/integrados (Vitest)
+npm run test:e2e    # fluxos críticos (Playwright)
+```
+
 ## Getting Started
 
 First, run the development server:
