@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import {
+  ArrowRight,
   Banknote,
+  CircleAlert,
   CreditCard,
   DollarSign,
   Package,
@@ -19,6 +22,7 @@ import {
   useDados,
   type FormaPagamento,
 } from "@/app/lib/store";
+import { produtosComAlerta, statusEstoque } from "@/app/lib/estoque";
 
 const iconesPagamento: Record<FormaPagamento, typeof Banknote> = {
   dinheiro: Banknote,
@@ -58,7 +62,17 @@ function nomePagamento(forma: FormaPagamento) {
 }
 
 export default function DashboardPage() {
-  const { vendas, categorias: categoriasCadastradas, carregado } = useDados();
+  const {
+    vendas,
+    produtos,
+    categorias: categoriasCadastradas,
+    carregado,
+  } = useDados();
+
+  const alertasEstoque = produtosComAlerta(produtos);
+  const semEstoque = alertasEstoque.filter(
+    (produto) => statusEstoque(produto) === "sem"
+  ).length;
 
   const vendasHoje = vendas.filter((venda) => ehHoje(venda.data));
 
@@ -124,6 +138,38 @@ export default function DashboardPage() {
           Visão geral das vendas do dia
         </p>
       </div>
+
+      {carregado && alertasEstoque.length > 0 && (
+        <Link
+          href="/estoque"
+          className="flex items-start gap-3 rounded-lg border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 hover:bg-amber-100/70 dark:hover:bg-amber-950/50 transition-colors"
+        >
+          <CircleAlert className="w-5 h-5 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              {alertasEstoque.length}{" "}
+              {alertasEstoque.length === 1
+                ? "produto precisa"
+                : "produtos precisam"}{" "}
+              de reposição
+            </p>
+            <p className="mt-0.5 text-xs text-amber-700/80 dark:text-amber-400/80 truncate">
+              {semEstoque > 0 && `${semEstoque} sem estoque · `}
+              {alertasEstoque
+                .slice(0, 3)
+                .map((produto) => produto.nome)
+                .join(", ")}
+              {alertasEstoque.length > 3
+                ? ` e mais ${alertasEstoque.length - 3}`
+                : ""}
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1 shrink-0 text-xs font-medium text-amber-700 dark:text-amber-400">
+            Ver estoque
+            <ArrowRight className="w-3.5 h-3.5" />
+          </span>
+        </Link>
+      )}
 
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

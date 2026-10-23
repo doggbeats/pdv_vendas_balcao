@@ -15,32 +15,29 @@ import {
   useDados,
   type Produto,
 } from "@/app/lib/store";
+import { statusEstoque, type StatusEstoque } from "@/app/lib/estoque";
 
 type FiltroEstoque = "todos" | "baixo" | "sem";
 
-function statusEstoque(produto: Produto) {
-  if (produto.quantidade <= 0) {
-    return {
-      rotulo: "Sem estoque",
-      classe:
-        "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    };
-  }
-
-  if (produto.quantidade <= produto.estoqueMinimo) {
-    return {
-      rotulo: "Estoque baixo",
-      classe:
-        "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    };
-  }
-
-  return {
+const ESTILOS_STATUS: Record<
+  StatusEstoque,
+  { rotulo: string; classe: string }
+> = {
+  sem: {
+    rotulo: "Sem estoque",
+    classe: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  },
+  baixo: {
+    rotulo: "Estoque baixo",
+    classe:
+      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  },
+  ok: {
     rotulo: "Em estoque",
     classe:
       "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  };
-}
+  },
+};
 
 export default function EstoquePage() {
   const { produtos, categorias: categoriasCadastradas, carregado } = useDados();
@@ -107,12 +104,12 @@ export default function EstoquePage() {
       const combinaCategoria =
         categoria === "todas" || produto.categoria === categoria;
 
+      const situacao = statusEstoque(produto);
+
       const combinaFiltro =
         filtro === "todos" ||
-        (filtro === "baixo" &&
-          produto.quantidade > 0 &&
-          produto.quantidade <= produto.estoqueMinimo) ||
-        (filtro === "sem" && produto.quantidade <= 0);
+        (filtro === "baixo" && situacao === "baixo") ||
+        (filtro === "sem" && situacao === "sem");
 
       return combinaBuscaProduto && combinaCategoria && combinaFiltro;
     });
@@ -446,7 +443,8 @@ export default function EstoquePage() {
               </thead>
               <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
                 {produtosFiltrados.map((produto) => {
-                  const status = statusEstoque(produto);
+                  const situacao = statusEstoque(produto);
+                  const status = ESTILOS_STATUS[situacao];
 
                   return (
                     <tr
@@ -499,9 +497,9 @@ export default function EstoquePage() {
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${status.classe}`}
                         >
-                          {produto.quantidade <= 0 ? (
+                          {situacao === "sem" ? (
                             <PackageX className="w-3 h-3" />
-                          ) : produto.quantidade <= produto.estoqueMinimo ? (
+                          ) : situacao === "baixo" ? (
                             <CircleAlert className="w-3 h-3" />
                           ) : (
                             <CircleCheck className="w-3 h-3" />

@@ -3,6 +3,7 @@
 import { Menu, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import NotificacoesEstoque from "./NotificacoesEstoque";
 import UsuarioCabecalho from "./UsuarioCabecalho";
 
 type HeaderProps = {
@@ -52,6 +53,8 @@ export default function Header({ onAbrirMenu }: HeaderProps) {
             />
           </div>
         </form>
+
+        <NotificacoesEstoque />
 
         <div className="shrink-0">
           <UsuarioCabecalho />
