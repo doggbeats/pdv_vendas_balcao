@@ -11,7 +11,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   // A tela de login fica fora do shell do sistema (sem header/sidebar).
   if (pathname === "/login") {
-    return <>{children}</>;
+    return <div className="animacao-pagina">{children}</div>;
   }
 
   return (
@@ -26,7 +26,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-1 min-h-0">
         <Sidebar aberto={menuAberto} onFechar={() => setMenuAberto(false)} />
-        <main className="flex-1 min-w-0 overflow-auto">{children}</main>
+        <main className="flex-1 min-w-0 overflow-auto">
+          <div key={pathname} className="animacao-pagina">
+            {children}
+          </div>
+        </main>
       </div>
     </>
   );
