@@ -17,6 +17,14 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
+
+  /* Deixa o ícone nativo de data/mês claro no tema escuro. */
+  input[type="date"],
+  input[type="month"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    color-scheme: dark;
+  }
 }
 
 body {
