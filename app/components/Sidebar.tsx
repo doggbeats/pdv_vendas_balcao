@@ -52,7 +52,7 @@ function Navegacao({ onNavegar }: { onNavegar?: () => void }) {
                 onClick={onNavegar}
                 className={`w-full flex items-center gap-3 px-3 py-2 transition-colors text-left ${
                   item.destaque
-                    ? "bg-green-600 text-white hover:bg-green-700 rounded-md"
+                    ? "bg-emerald-600 text-white hover:bg-emerald-700 rounded-md"
                     : isActive
                       ? "bg-zinc-100 dark:bg-zinc-800 rounded-lg"
                       : "hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg"

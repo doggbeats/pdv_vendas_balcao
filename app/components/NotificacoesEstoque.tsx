@@ -208,7 +208,7 @@ export default function NotificacoesEstoque({
                 setAberto(false);
                 onNavegar?.();
               }}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
             >
               Abrir estoque
               <ArrowRight className="w-4 h-4" />

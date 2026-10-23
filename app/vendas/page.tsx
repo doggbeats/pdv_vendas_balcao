@@ -300,7 +300,7 @@ export default function VendasPage() {
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
                 placeholder="Buscar produto por nome ou código..."
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <select
@@ -329,7 +329,7 @@ export default function VendasPage() {
               </p>
               <Link
                 href="/produtos/cadastro"
-                className="mt-2 inline-block text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                className="mt-2 inline-block text-sm text-emerald-600 dark:text-emerald-400 hover:underline"
               >
                 Cadastrar produto
               </Link>
@@ -348,10 +348,10 @@ export default function VendasPage() {
                     type="button"
                     onClick={() => adicionarProduto(produto)}
                     disabled={semEstoque}
-                    className="text-left rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 hover:border-blue-400 hover:shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed relative"
+                    className="text-left rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 hover:border-emerald-400 hover:shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed relative"
                   >
                     {noCarrinho && (
-                      <span className="absolute top-2 right-2 min-w-6 h-6 px-1.5 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">
+                      <span className="absolute top-2 right-2 min-w-6 h-6 px-1.5 rounded-full bg-emerald-600 text-white text-xs font-semibold flex items-center justify-center">
                         {noCarrinho.quantidade}
                       </span>
                     )}
@@ -521,7 +521,7 @@ export default function VendasPage() {
                       }}
                       className={`flex flex-col items-center gap-1 rounded-lg border px-2 py-2 text-xs font-medium transition-colors ${
                         ativa
-                          ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
+                          ? "border-emerald-600 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
                           : "border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                       }`}
                     >
@@ -564,7 +564,7 @@ export default function VendasPage() {
               type="button"
               onClick={finalizarVenda}
               disabled={carrinho.length === 0}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-600 text-white text-sm font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <CheckCircle2 className="w-4 h-4" />
               Finalizar venda

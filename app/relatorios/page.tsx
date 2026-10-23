@@ -308,7 +308,7 @@ export default function RelatoriosPage() {
                   aria-pressed={periodo === opcao.valor}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                     periodo === opcao.valor
-                      ? "bg-blue-600 border-blue-600 text-white"
+                      ? "bg-emerald-600 border-emerald-600 text-white"
                       : "border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                   }`}
                 >
@@ -333,7 +333,7 @@ export default function RelatoriosPage() {
                   type="month"
                   value={mes}
                   onChange={(e) => setMes(e.target.value)}
-                  className="pl-9 pr-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="pl-9 pr-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
@@ -343,7 +343,7 @@ export default function RelatoriosPage() {
             type="button"
             onClick={gerarPdf}
             disabled={vendasDoPeriodo.length === 0 || gerando}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" />
             {gerando ? "Gerando PDF..." : "Baixar PDF"}
@@ -369,7 +369,7 @@ export default function RelatoriosPage() {
             Escolha outro período ou{" "}
             <Link
               href="/vendas"
-              className="text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-emerald-600 dark:text-emerald-400 hover:underline"
             >
               registre uma venda
             </Link>
@@ -407,8 +407,8 @@ export default function RelatoriosPage() {
                     {resumo.transacoes}
                   </p>
                 </div>
-                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-                  <Receipt className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
+                  <Receipt className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
               </div>
             </div>

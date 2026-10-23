@@ -128,7 +128,7 @@ export default function AvisoEstoque() {
 
             <Link
               href="/estoque"
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
             >
               Ver estoque
               <ArrowRight className="w-3.5 h-3.5" />

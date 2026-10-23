@@ -199,8 +199,8 @@ export default function DashboardPage() {
                 {totalItens}
               </p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-              <ShoppingCart className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
+              <ShoppingCart className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
         </div>
@@ -321,7 +321,7 @@ export default function DashboardPage() {
                 <div key={item.categoria} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-blue-500" />
+                      <div className="w-3 h-3 rounded-full bg-emerald-500" />
                       <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                         {item.categoria}
                       </span>
@@ -337,7 +337,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2">
                     <div
-                      className="bg-blue-500 h-2 rounded-full"
+                      className="bg-emerald-500 h-2 rounded-full"
                       style={{
                         width: `${(item.total / maiorCategoria) * 100}%`,
                       }}
